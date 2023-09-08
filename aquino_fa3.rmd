@@ -1,0 +1,115 @@
+---
+title: 'APM1111: Formative Assessment 1'
+author: "Leiana Mari D. Aquino"
+date: "8 September 2023"
+output:
+  html_document:
+    number_sections: no
+    toc: no
+    fig_width: 7
+    fig_height: 4.5
+    theme: readable
+    highlight: tango
+  classoption: twocolumn
+---
+
+```{=html}
+<style>
+body {
+text-align: justify}
+</style>
+```
+
+### Formative Assessment 3
+
+::: columns
+::: {.column width="40%"}
+**Use R or Python to find Q1, Q2, Q3, D9, and P95, and other measures for the following sample of test scores: **
+
+88 45 53 86 33 86 85 30 89 53 41 96 56 38 62 <br /> 71 51 86 68 29 28 47 33 37 25 36 33 94 73 46 <br /> 42 34 79 72 88 99 82 62 57 42 28 55 67 62 60 <br /> 96 61 57 75 93 34 75 53 32 28 73 51 69 91 35
+:::
+
+::: {.column width="60%"}
+&nbsp; &nbsp; &nbsp; **Expected Output**
+
+.![](expected_output.jpg)
+:::
+:::
+
+#### Load and check data
+
+```{r}
+# load packages
+library(moments)
+library(knitr) # data visualization
+library(kableExtra)
+library(magrittr)
+```
+Now that our packages are loaded, let’s read in and take a peek at the data.
+
+```{r}
+# sample data
+data <- c(88, 45, 53, 86, 33, 86, 85, 30, 89, 53, 41, 96, 56, 38, 62,
+          71, 51, 86, 68, 29, 28, 47, 33, 37, 25, 36, 33, 94, 73, 46,
+          42, 34, 79, 72, 88, 99, 82, 62, 57, 42, 28, 55, 67, 62, 60,
+          96, 61, 57, 75, 93, 34, 75, 53, 32, 28, 73, 51, 69, 91, 35)
+```
+
+We can now compute its descriptive statistics:
+```{r}
+# formula for SE skew and kurtosis
+standardError_skew <- function(data){
+  n <- length(data)
+  numerator <- 6 * (n - 1)
+  denominator <- (n - 2) * (n + 1) * (n + 3)
+  
+  se_skewness <- sqrt(numerator / denominator)
+  return(se_skewness)
+}
+
+standardError_kurtosis <- function(data){
+  n <- length(data)
+  m_4 <- mean((data - mean(data))^4)
+  
+  se_kurtosis <- sqrt((24 * n * (n - 1)) / ((n - 2) * (n - 3) * (n + 3) * (n + 5)) * (m_4 / (var(data)^2)) - 3)
+  return(se_kurtosis)
+}
+
+# calculate statistics
+mean_val <- mean(data)
+median_val <- median(data)
+mode_val <- as.numeric(names(sort(table(data), decreasing = TRUE)[1]))
+std_dev_val <- sd(data)
+variance_val <- var(data)
+skewness_val <- skewness(data)
+std_err_skewness_val <- standardError_skew(data)
+kurtosis_val <- kurtosis(data)
+std_err_kurtosis_val <- standardError_kurtosis(data)
+minimum_val <- min(data)
+maximum_val <- max(data)
+
+# quartiles and percentiles
+
+q1_val <- quantile(data, 0.25)
+q3_val <- quantile(data, 0.75)
+d9_val <- quantile(data, 0.90)
+p95_val <- quantile(data, 0.95)
+```
+
+After measuring its statistics, we can now transform the data frame into a viewable table.
+```{r}
+# create a data frame for the table
+
+stats_table <- data.frame(
+  "Statistic" = c("Valid", "Mode", "Median", "Mean", "Std. Dev.", "Variance", "Skewness", "Std. Error of Skewness", "Kurtosis", "Std. Error of Kurtosis", "Min.", "Max.", "25th percentile", "75th percentile", "90th percentile", "95th percentile"),
+  "Score" = c(length(data), mode_val, median_val, mean_val, std_dev_val, variance_val, skewness_val, std_err_skewness_val, kurtosis_val, std_err_kurtosis_val, minimum_val, maximum_val, q1_val, q3_val, d9_val, p95_val),
+  stringsAsFactors = FALSE
+)
+```
+
+The expected output:
+```{r}
+kbl(stats_table) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+```
+
